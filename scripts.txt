@@ -1,0 +1,8 @@
+pip install python-dotenv Flask Flask-SQLAlchemy Flask-Migrate psycopg2 Flask-Mail autopep8 wheel Flask-JWT-Extended
+
+# set the user mailing info before testing email feature
+set MAIL_SERVER=smtp.googlemail.com
+set MAIL_PORT=587
+set MAIL_USE_TLS=1
+set MAIL_USERNAME=<your-gmail-username>
+set MAIL_PASSWORD=<your-gmail-password>
