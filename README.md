@@ -1,7 +1,7 @@
-# Magnifie
+# Vivilio
 ## A social media for book's lovers
 
-Magnifie is social media platform where you can find and review any book you want. Also, you can explore clubs that share same interests as you!
+Vivilio is social media platform where you can find and review any book you want. Also, you can explore clubs that share same interests as you!
 
 ## Feature
 - Search for books by names or categories.
@@ -23,10 +23,10 @@ Tallie uses a number of framework in the following:
 
 ## Installation
 
-Tallie requires Python 3.7.9+ to run.
+Vivilio requires Python 3.7.9+ to run.
 
 ```sh
-cd magnifie
+cd vivilio
 ```
 
 Accessing virtual environment
