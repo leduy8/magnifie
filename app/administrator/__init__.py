@@ -28,74 +28,98 @@ def init_admin(app):
             return redirect(basic_auth.challenge())
 
     class UserModelView(ModelView):
-        column_exclude_list = ('password_hash')
-        form_excluded_columns = ('password_hash', 'member_since')
+        column_list = ('id', 'email', 'name', 'member_since', 'born', 'website', 'social_media', 'is_author')
+        # column_exclude_list = ('password_hash', 'bio')
+        form_excluded_columns = ('password_hash', 'member_since', 'reviews', 'posts', 'comments', 'publishes')
 
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)
 
     class BookModelView(ModelView):
+        column_list = ('id', 'title', 'description')
+        # column_exclude_list = ('cover')
+        form_excluded_columns = ('reviewed_by')
 
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)
 
     class CategoryModelView(ModelView):
+        column_list = ('id', 'type', 'community_id')
+        form_columns = ('type', 'community_id')
 
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)
 
 
     class CommentModelView(ModelView):
+        column_list = ('id', 'user_id', 'post_id', 'content')
+        form_columns = ('user_id', 'post_id', 'content')
 
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)
 
     class CommunityModelView(ModelView):
+        column_list = ('id', 'name', 'description', 'restrict_posting')
+        form_excluded_columns = ('posts', 'users')
 
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)
     
     class CreateModelView(ModelView):
+        column_list = ('id', 'user_id', 'post_id')
+        form_columns = ('user_id', 'post_id')
 
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)
     
     class GenreModelView(ModelView):
+        column_list = ('id', 'type')
 
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)
     
     class JoinModelView(ModelView):
+        column_list = ('id', 'user_id', 'community_id', 'role_id')
+        form_columns = ('user_id', 'community_id', 'role_id')
 
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)
     
     class PostModelView(ModelView):
+        form_excluded_columns = ('comments')
 
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)
     
     class ReviewModelView(ModelView):
+        column_list = ('id', 'user_id', 'book_id', 'content')
+        form_columns = ('user_id', 'book_id', 'content')
 
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)
     
     class PublishModelView(ModelView):
+        column_list = ('id', 'user_id', 'book_id')
+        form_columns = ('user_id', 'book_id')
 
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)
     
     class StrengthModelView(ModelView):
+        column_list = ('id', 'user_id', 'genre_id')
+        form_columns = ('user_id', 'genre_id')
 
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)
     
     class RoleModelView(ModelView):
+        column_list = ('id', 'type')
 
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)
     
     class VisibilityModelView(ModelView):
+        column_list = ('id', 'type')
 
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)

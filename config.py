@@ -9,6 +9,8 @@ class Config(object):
     MAIL_USE_TLS = os.getenv('MAIL_USE_TLS')
     MAIL_USERNAME = os.getenv('MAIL_USERNAME')
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+    BASIC_AUTH_USERNAME = os.getenv("BASIC_AUTH_USERNAME") or 'admin'
+    BASIC_AUTH_PASSWORD = os.getenv("BASIC_AUTH_PASSWORD") or '123456'
     ADMINS = ['no-reply@tallie.com']
     CLIENT_URL = os.getenv('CLIENT_URL') or 'http://127.0.0.1:5000'
 
