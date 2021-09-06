@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import User, Book, Category, Comment, Community, Create, Genre, Join, Post, Review, Publish, Strength, Role, Visibility
+from app.models import User, Book, Category, Comment, Community, Create, Genre, Join, Post, Review, Publish, Strength, Role, Visibility, BookGenre
 
 app = create_app()
 
@@ -23,5 +23,6 @@ def make_shell_context():
         'Publish': Publish, 
         'Strength': Strength, 
         'Role': Role, 
-        'Visibility': Visibility
+        'Visibility': Visibility,
+        'BookGenre': BookGenre
     }

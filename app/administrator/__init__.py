@@ -4,7 +4,7 @@ from flask_basicauth import BasicAuth
 from flask_admin import Admin
 from flask_admin.contrib import sqla
 from app import db
-from app.models import User, Book, Category, Comment, Community, Create, Genre, Join, Post, Review, Publish, Strength, Role, Visibility
+from app.models import User, Book, Category, Comment, Community, Create, Genre, Join, Post, Review, Publish, Strength, Role, Visibility, BookGenre
 
 def init_admin(app):
     basic_auth = BasicAuth(app)
@@ -28,7 +28,7 @@ def init_admin(app):
             return redirect(basic_auth.challenge())
 
     class UserModelView(ModelView):
-        column_list = ('id', 'email', 'name', 'member_since', 'born', 'website', 'social_media', 'is_author')
+        column_list = ('id', 'email', 'name', 'member_since', 'born', 'website', 'social_media', 'avatar', 'is_author')
         # column_exclude_list = ('password_hash', 'bio')
         form_excluded_columns = ('password_hash', 'member_since', 'reviews', 'posts', 'comments', 'publishes')
 
@@ -36,7 +36,7 @@ def init_admin(app):
             return super().on_model_change(form, model, is_created)
 
     class BookModelView(ModelView):
-        column_list = ('id', 'title', 'description')
+        column_list = ('id', 'title', 'description', 'cover')
         # column_exclude_list = ('cover')
         form_excluded_columns = ('reviewed_by')
 
@@ -123,6 +123,12 @@ def init_admin(app):
 
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)
+    
+    class BookGenreModelView(ModelView):
+        column_list = ('id', 'book_id', 'genre_id')
+
+        def on_model_change(self, form, model, is_created):
+            return super().on_model_change(form, model, is_created)
 
     admin = Admin(app)
     admin.add_view(UserModelView(User, db.session))
@@ -139,3 +145,4 @@ def init_admin(app):
     admin.add_view(PublishModelView(Publish, db.session))
     admin.add_view(StrengthModelView(Strength, db.session))
     admin.add_view(VisibilityModelView(Visibility, db.session))
+    admin.add_view(BookGenreModelView(BookGenre, db.session))

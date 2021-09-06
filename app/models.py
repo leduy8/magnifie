@@ -15,17 +15,17 @@ class User(db.Model):
     born = db.Column(db.String())
     website = db.Column(URLType)
     social_media = db.Column(URLType)
+    avatar = db.Column(db.LargeBinary)
     is_author = db.Column(db.Boolean, default=False)
     reviews = db.relationship(
         'Book',
         secondary='review',
-        backref='reviewed_by',
+        backref='reviews',
         lazy='dynamic'
     )
     publishes = db.relationship(
         'Book',
         secondary='publish',
-        backref='published_by',
         lazy='dynamic'
     )
     strength = db.relationship(
@@ -43,13 +43,6 @@ class User(db.Model):
     posts = db.relationship(
         'Post',
         secondary='create',
-        backref='posted_by',
-        lazy='dynamic'
-    )
-    comments = db.relationship(
-        'Post',
-        secondary='comment',
-        backref='comments',
         lazy='dynamic'
     )
 
@@ -58,6 +51,26 @@ class User(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def get_user_info(self):
+        return {
+            'id': self.id,
+            'email': self.email,
+            'name': self.name,
+            'member_since': self.member_since,
+            'bio': self.bio,
+            'born': self.born,
+            'website': self.website,
+            'social_media': self.social_media,
+            'avatar': self.avatar,
+            'is_author': self.is_author,
+        }
+
+    def get_user_genre(self):
+        return {'strengths': [s.get_genre_info() for s in self.strength]}
+
+    def get_user_book(self):
+        return {'books': [p.get_book_info() for p in self.publishes]}
 
     def __repr__(self) -> str:
         return f'<User: {self.email}>'
@@ -82,6 +95,26 @@ class Book(db.Model):
     title = db.Column(db.String(50))
     description = db.Column(db.String(250))
     cover = db.Column(db.LargeBinary)
+    genres = db.relationship(
+        'Genre',
+        secondary='bookgenre',
+        backref='books',
+        lazy='dynamic'
+    )
+
+    def get_book_info(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'cover': self.cover
+        }
+    
+    def get_book_reviews(self):
+        return {'reviews': [r.get_review_info() for r in self.reviews]}
+
+    def get_book_genre(self):
+        return {'books_genres': [g.get_genre_info() for g in self.genres]}
 
     def __repr__(self) -> str:
         return f'<Book: {self.title}>'
@@ -93,6 +126,12 @@ class Book(db.Model):
 class Genre(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(20))
+
+    def get_genre_info(self):
+        return {
+            'id': self.id,
+            'type': self.type
+        }
 
     def __repr__(self) -> str:
         return f'<Genre: {self.type}>'
@@ -110,6 +149,16 @@ class Community(db.Model):
     visibility = db.relationship('Visibility', uselist=False)
     category = db.relationship('Category', uselist=False)
 
+    def get_community_info(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'restrict_posting': self.restrict_posting,
+            'visibility': self.visibility.get_visibility_info(),
+            'category': self.category.get_category_info()
+        }
+
     def __repr__(self) -> str:
         return f'<Community: {self.name}>'
 
@@ -121,6 +170,12 @@ class Visibility(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(20))
     community_id = db.Column(db.Integer, db.ForeignKey('community.id'))
+
+    def get_visibility_info(self):
+        return {
+            'id': self.id,
+            'type': self.type
+        }
 
     def __repr__(self) -> str:
         return f'<Visibility: {self.type}>'
@@ -134,6 +189,12 @@ class Category(db.Model):
     type = db.Column(db.String(20))
     community_id = db.Column(db.Integer, db.ForeignKey('community.id'))
 
+    def get_category_info(self):
+        return {
+            'id': self.id,
+            'type': self.type
+        }
+
     def __repr__(self) -> str:
         return f'<Category: {self.type}>'
 
@@ -145,7 +206,25 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text)
     turn_off_commenting = db.Column(db.Boolean, default=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     community_id = db.Column(db.Integer, db.ForeignKey('community.id'))
+    comments = db.relationship(
+        'User',
+        secondary='comment',
+        lazy='dynamic'
+    )
+
+    def get_post_info(self):
+        return {
+            'id': self.id,
+            'content': self.content,
+            'turn_off_commenting': self.turn_off_commenting,
+            'author_id': self.author_id,
+            'community_id': self.community_id
+        }
+
+    def get_post_comment(self):
+        return {'comments': [c.get_comment_info() for c in self.comments]}
 
     def __repr__(self) -> str:
         return f'<Post: {self.id}>'
@@ -158,7 +237,23 @@ class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'))
+    overview = db.Column(db.String(50))
     content = db.Column(db.Text)
+    star = db.Column(db.Integer)
+    started = db.Column(db.Date)
+    finished = db.Column(db.Date)
+
+    def get_review_info(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'book_id': self.book_id,
+            'overview': self.overview,
+            'content': self.content,
+            'star': self.star,
+            'started': self.started,
+            'finished': self.finished
+        }
 
     def __repr__(self) -> str:
         return f'<Review: {self.id}>'
@@ -166,6 +261,13 @@ class Review(db.Model):
     def __str__(self) -> str:
         return f'{self.id}'
 
+
+class BookGenre(db.Model):
+    __tablename__ = 'bookgenre'
+    id = db.Column(db.Integer, primary_key=True)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'))
+    genre_id = db.Column(db.Integer, db.ForeignKey('genre.id'))
+    
 
 class Publish(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -209,3 +311,11 @@ class Comment(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
     content = db.Column(db.Text)
+
+    def get_comment_info(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'post_id': self.post_id,
+            'content': self.content
+        }
