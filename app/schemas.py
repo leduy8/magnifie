@@ -1,5 +1,5 @@
 from app import ma
-from app.models import User, Book, Category, Comment, Community, Create, Genre, Join, Post, Review, Publish, Strength, Role, Visibility, BookGenre
+from app.models import User, Book, Category, Comment, Community, Genre, Membership, Post, Review, Publish, Strength, Role, Visibility, BookGenre
 
 
 class UserSchema(ma.SQLAlchemySchema):
@@ -16,6 +16,7 @@ class UserSchema(ma.SQLAlchemySchema):
     social_media = ma.auto_field()
     avatar = ma.auto_field()
     is_author = ma.auto_field()
+    strength = ma.auto_field()
 
 
 class RoleSchema(ma.SQLAlchemySchema):
@@ -49,6 +50,11 @@ class VisibilitySchema(ma.SQLAlchemySchema):
     type = ma.auto_field()
 
 
+class CategorySchema(ma.SQLAlchemySchema):
+    class Meta:
+        model = Category
+
+
 class CommunitySchema(ma.SQLAlchemySchema):
     class Meta:
         model = Community
@@ -61,6 +67,46 @@ class CommunitySchema(ma.SQLAlchemySchema):
     category = ma.Nested(CategorySchema())
 
 
+class PostSchema(ma.SQLAlchemySchema):
+    class Meta:
+        model = Post
+
+    id = ma.auto_field()
+    content = ma.auto_field()
+    turn_off_commenting = ma.auto_field()
+    author = ma.Nested(UserSchema())
 
 
+class BookGenre(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = BookGenre
 
+
+class CommentSchema(ma.SQLAlchemySchema):
+    class Meta:
+        model = Comment
+
+    id = ma.auto_field()
+    author = ma.Nested(UserSchema())
+    post = ma.Nested(PostSchema())
+    content = ma.auto_field()
+
+
+class ReviewSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Review
+
+
+class MembershipSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Membership
+
+
+class PublishSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Publish
+        
+
+class StrengthSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Strength

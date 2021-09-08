@@ -17,12 +17,6 @@ class User(db.Model):
     social_media = db.Column(URLType)
     avatar = db.Column(db.LargeBinary)
     is_author = db.Column(db.Boolean, default=False)
-    reviews = db.relationship(
-        'Book',
-        secondary='review',
-        backref='reviews',
-        lazy='dynamic'
-    )
     publishes = db.relationship(
         'Book',
         secondary='publish',
@@ -40,11 +34,7 @@ class User(db.Model):
         backref='users',
         lazy='dynamic'
     )
-    posts = db.relationship(
-        'Post',
-        secondary='create',
-        lazy='dynamic'
-    )
+    posts = db.relationship("User", backref="author", lazy="dynamic")
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -101,6 +91,7 @@ class Book(db.Model):
         backref='books',
         lazy='dynamic'
     )
+    reviews = db.relationship("Review", backref="book", lazy="dynamic")
 
     def get_book_info(self):
         return {
@@ -208,11 +199,7 @@ class Post(db.Model):
     turn_off_commenting = db.Column(db.Boolean, default=False)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     community_id = db.Column(db.Integer, db.ForeignKey('community.id'))
-    comments = db.relationship(
-        'User',
-        secondary='comment',
-        lazy='dynamic'
-    )
+    comments = db.relationship("Comment", backref="post")
 
     def get_post_info(self):
         return {
@@ -242,6 +229,8 @@ class Review(db.Model):
     star = db.Column(db.Integer)
     started = db.Column(db.Date)
     finished = db.Column(db.Date)
+
+    author = db.relationship("User", uselist=False)
 
     def get_review_info(self):
         return {
@@ -293,17 +282,11 @@ class Strength(db.Model):
         return f'{self.id}'
 
 
-class Join(db.Model):
+class Membership(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     community_id = db.Column(db.Integer, db.ForeignKey('community.id'))
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
-
-
-class Create(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
 
 
 class Comment(db.Model):
@@ -311,6 +294,8 @@ class Comment(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
     content = db.Column(db.Text)
+
+    author = db.relationship("User", uselist=False)
 
     def get_comment_info(self):
         return {
