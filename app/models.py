@@ -12,7 +12,7 @@ class User(db.Model):
     name = db.Column(db.String(40))
     member_since = db.Column(db.Date, default=date.today)
     bio = db.Column(db.String(250))
-    born = db.Column(db.String())
+    born = db.Column(db.String(100))
     website = db.Column(URLType)
     social_media = db.Column(URLType)
     avatar = db.Column(db.LargeBinary)
@@ -30,11 +30,11 @@ class User(db.Model):
     )
     communities = db.relationship(
         'Community',
-        secondary='join',
+        secondary='membership',
         backref='users',
         lazy='dynamic'
     )
-    posts = db.relationship("User", backref="author", lazy="dynamic")
+    posts = db.relationship("Post", backref="author", lazy="dynamic")
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -59,7 +59,7 @@ class User(db.Model):
     def get_user_genre(self):
         return {'strengths': [s.get_genre_info() for s in self.strength]}
 
-    def get_user_book(self):
+    def get_user_books(self):
         return {'books': [p.get_book_info() for p in self.publishes]}
 
     def __repr__(self) -> str:

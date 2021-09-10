@@ -16,7 +16,7 @@ class UserSchema(ma.SQLAlchemySchema):
     social_media = ma.auto_field()
     avatar = ma.auto_field()
     is_author = ma.auto_field()
-    strength = ma.auto_field()
+    # strength = ma.auto_field()
 
 
 class RoleSchema(ma.SQLAlchemySchema):

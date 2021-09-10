@@ -15,6 +15,7 @@ ma = Marshmallow()
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    
     db.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
@@ -30,4 +31,4 @@ def create_app(config_class=Config):
     return app
 
 
-from app import models, email
+from app import models, email, utils

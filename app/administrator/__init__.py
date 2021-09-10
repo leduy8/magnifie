@@ -4,7 +4,7 @@ from flask_basicauth import BasicAuth
 from flask_admin import Admin
 from flask_admin.contrib import sqla
 from app import db
-from app.models import User, Book, Category, Comment, Community, Create, Genre, Join, Post, Review, Publish, Strength, Role, Visibility, BookGenre
+from app.models import User, Book, Category, Comment, Community, Genre, Membership, Post, Review, Publish, Strength, Role, Visibility, BookGenre
 
 def init_admin(app):
     basic_auth = BasicAuth(app)
@@ -65,20 +65,13 @@ def init_admin(app):
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)
     
-    class CreateModelView(ModelView):
-        column_list = ('id', 'user_id', 'post_id')
-        form_columns = ('user_id', 'post_id')
-
-        def on_model_change(self, form, model, is_created):
-            return super().on_model_change(form, model, is_created)
-    
     class GenreModelView(ModelView):
         column_list = ('id', 'type')
 
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)
     
-    class JoinModelView(ModelView):
+    class MembershipModelView(ModelView):
         column_list = ('id', 'user_id', 'community_id', 'role_id')
         form_columns = ('user_id', 'community_id', 'role_id')
 
@@ -139,9 +132,8 @@ def init_admin(app):
     admin.add_view(CategoryModelView(Category, db.session))
     admin.add_view(PostModelView(Post, db.session))
     admin.add_view(CommentModelView(Comment, db.session))
-    admin.add_view(JoinModelView(Join, db.session))
     admin.add_view(RoleModelView(Role, db.session))
-    admin.add_view(CreateModelView(Create, db.session))
+    admin.add_view(MembershipModelView(Membership, db.session))
     admin.add_view(PublishModelView(Publish, db.session))
     admin.add_view(StrengthModelView(Strength, db.session))
     admin.add_view(VisibilityModelView(Visibility, db.session))
