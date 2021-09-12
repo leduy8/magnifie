@@ -24,6 +24,9 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://postgres:123456@localhost/Vivilio'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    MAX_CONTENT_LENGTH = 5 * 1024 * 1024
+    ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png']
+
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY') or 'Maggie1234'
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=300)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=300)

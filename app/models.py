@@ -52,7 +52,7 @@ class User(db.Model):
             'born': self.born,
             'website': self.website,
             'social_media': self.social_media,
-            'avatar': self.avatar,
+            'avatar': self.avatar.decode('ascii'),
             'is_author': self.is_author,
         }
 
@@ -98,7 +98,7 @@ class Book(db.Model):
             'id': self.id,
             'title': self.title,
             'description': self.description,
-            'cover': self.cover
+            'cover': self.cover.decode('ascii')
         }
     
     def get_book_reviews(self):
