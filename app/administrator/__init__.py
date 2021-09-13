@@ -44,8 +44,8 @@ def init_admin(app):
             return super().on_model_change(form, model, is_created)
 
     class CategoryModelView(ModelView):
-        column_list = ('id', 'type', 'community_id')
-        form_columns = ('type', 'community_id')
+        column_list = ('id', 'type')
+        form_excluded_columns = ('community_id')
 
         def on_model_change(self, form, model, is_created):
             return super().on_model_change(form, model, is_created)

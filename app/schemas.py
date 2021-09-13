@@ -50,7 +50,7 @@ class VisibilitySchema(ma.SQLAlchemySchema):
     type = ma.auto_field()
 
 
-class CategorySchema(ma.SQLAlchemySchema):
+class CategorySchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Category
 

@@ -28,6 +28,7 @@ def book_creation():
         return bad_request('Image must be in jpg, jpeg or png')
 
     book = Book(title=title, description=description, cover=base64.b64encode(cover.stream.read()))
+    current_user.publishes.append(book)
     db.session.add(book)
     db.session.commit()
 

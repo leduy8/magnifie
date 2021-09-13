@@ -62,6 +62,9 @@ class User(db.Model):
     def get_user_books(self):
         return {'books': [p.get_book_info() for p in self.publishes]}
 
+    def get_user_communities(self):
+        return {'communities': [c.get_community_info() for c in self.communities]}
+
     def __repr__(self) -> str:
         return f'<User: {self.email}>'
 
@@ -133,7 +136,7 @@ class Genre(db.Model):
 
 class Community(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
+    name = db.Column(db.String(100), index=True, unique=True)
     description = db.Column(db.String(100))
     restrict_posting = db.Column(db.Boolean, default=False)
     posts = db.relationship('Post', backref='community', lazy='dynamic')
@@ -149,6 +152,9 @@ class Community(db.Model):
             'visibility': self.visibility.get_visibility_info(),
             'category': self.category.get_category_info()
         }
+
+    def get_community_posts(self):
+        return {'posts': [p.get_post_info() for p in self.posts]}
 
     def __repr__(self) -> str:
         return f'<Community: {self.name}>'
@@ -210,7 +216,7 @@ class Post(db.Model):
             'community_id': self.community_id
         }
 
-    def get_post_comment(self):
+    def get_post_comments(self):
         return {'comments': [c.get_comment_info() for c in self.comments]}
 
     def __repr__(self) -> str:
@@ -300,7 +306,7 @@ class Comment(db.Model):
     def get_comment_info(self):
         return {
             'id': self.id,
-            'user_id': self.user_id,
+            'author_id': self.user_id,
             'post_id': self.post_id,
             'content': self.content
         }
