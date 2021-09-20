@@ -28,12 +28,6 @@ class User(db.Model):
         backref='users',
         lazy='dynamic'
     )
-    communities = db.relationship(
-        'Community',
-        secondary='membership',
-        backref='users',
-        lazy='dynamic'
-    )
     posts = db.relationship("Post", backref="author", lazy="dynamic")
 
     def set_password(self, password):
@@ -61,9 +55,6 @@ class User(db.Model):
 
     def get_user_books(self):
         return {'books': [p.get_book_info() for p in self.publishes]}
-
-    def get_user_communities(self):
-        return {'communities': [c.get_community_info() for c in self.communities]}
 
     def __repr__(self) -> str:
         return f'<User: {self.email}>'
@@ -143,6 +134,12 @@ class Community(db.Model):
     visibility = db.relationship('Visibility', uselist=False)
     category = db.relationship('Category', uselist=False)
 
+    members = db.relationship(
+        'Membership',
+        backref='community',
+        lazy='dynamic'
+    )
+
     def get_community_info(self):
         return {
             'id': self.id,
@@ -155,6 +152,9 @@ class Community(db.Model):
 
     def get_community_posts(self):
         return {'posts': [p.get_post_info() for p in self.posts]}
+
+    def get_community_users(self):
+        return {'users': [u.get_user_info() for u in self.users]}
 
     def __repr__(self) -> str:
         return f'<Community: {self.name}>'
@@ -262,6 +262,12 @@ class BookGenre(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'))
     genre_id = db.Column(db.Integer, db.ForeignKey('genre.id'))
+
+    def __repr__(self) -> str:
+        return f'<BookGerne: {self.id}>'
+
+    def __str__(self) -> str:
+        return f'{self.id}'
     
 
 class Publish(db.Model):
@@ -293,6 +299,17 @@ class Membership(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     community_id = db.Column(db.Integer, db.ForeignKey('community.id'))
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
+
+    profile = db.relationship('User', uselist=False)
+    role = db.relationship('Role', uselist=False)
+
+    def get_membership_info(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'community_id': self.community_id,
+            'role_id': self.role_id
+        }
 
 
 class Comment(db.Model):

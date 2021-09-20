@@ -3,10 +3,10 @@ from schema import Schema, SchemaError, And, Use
 from flask import request, jsonify, current_app
 from flask_jwt_extended import current_user
 from app import db
-from app.models import Community, Post, Comment, Visibility, Category
-from app.schemas import CommunitySchema, PostSchema, CommentSchema
+from app.models import Community, Membership, Post, Comment, Role, Visibility, Category, User
+from app.schemas import CommunitySchema, MembershipSchema, PostSchema, CommentSchema
 from app.api import bp
-from app.api.errors import bad_request, not_found
+from app.api.errors import bad_request, forbidden, not_found
 
 
 @bp.route('/communities', methods=['POST'])
@@ -55,8 +55,16 @@ def community_creation():
             category = category
         )
 
+        
+
         current_user.communities.append(community)
         db.session.add(community)
+        db.session.commit()
+
+        creator = Role.query.filter_by(type='Creator').first()
+        membership = Membership.query.filter_by(user_id=current_user.id).filter_by(community_id=community.id).first()
+        membership.role_id=creator.id
+
         db.session.commit()
 
         return jsonify(CommunitySchema().dump(community)), 201
@@ -78,7 +86,8 @@ def community_details(community_id):
 @bp.route('/communities/joined', methods=['GET'])
 @jwt_required()
 def communities_joined():
-    return jsonify(current_user.get_user_communities())
+    communities_joined = Membership.query.filter_by(user_id=current_user.id).all()
+    return jsonify(MembershipSchema(many=True).dump(communities_joined))
 
 
 @bp.route('/communities/<community_id>/posts', methods=['POST'])
@@ -180,6 +189,7 @@ def community_delete_post(community_id, post_id):
     if not post:
         return not_found("Post's not found.")
 
+    Comment.query.filter_by(post_id=post_id).delete()
     community.posts.remove(post)
     db.session.delete(post)
     db.session.commit()
@@ -301,3 +311,147 @@ def community_delete_post_comment(community_id, post_id, comment_id):
     db.session.commit()
 
     return jsonify(post.get_post_comments())
+
+
+@bp.route('/communities/<community_id>/members', methods=['GET'])
+@jwt_required()
+def community_member_list(community_id):
+    community = Community.query.filter_by(id=community_id).first()
+
+    if not community:
+        return not_found("Commnunity's not found.")
+
+    members = Membership.query.filter_by(community_id=community_id).all()
+
+    return jsonify(MembershipSchema(many=True).dump(members))
+
+
+@bp.route('/communities/<community_id>/members', methods=['POST'])
+@jwt_required()
+def community_add_member(community_id):
+    try:
+        community = Community.query.filter_by(id=community_id).first()
+
+        if not community:
+            return not_found("Commnunity's not found.")
+        
+        role_giver = Membership.query.filter_by(user_id=current_user.id).filter_by(community_id=community_id).first()
+
+        if not role_giver:
+            return not_found("Current user is not a member of this community.")
+
+        if role_giver.role.type == 'Member':
+            return forbidden('User cannot add member to community.')
+
+        data = request.get_json()
+
+        Schema({
+            'user_id': And(
+                Use(int),
+                error='User_id must be an integer.'
+            ),
+            'role': And(
+                Use(str),
+                error='Must be a valid role.'
+            )
+        }).validate(data)
+
+        user = User.query.filter_by(id=data['user_id']).first()
+
+        if not user:
+            return not_found("Invalid user_id.")
+
+        role = Role.query.filter_by(type=data['role']).first()
+
+        if not role or role.type == 'Creator':
+            return not_found("Invalid role type.")
+
+        new_member = Membership(
+            user_id=data['user_id'],
+            role_id=role.id,
+            community_id=community_id
+        )
+
+        db.session.add(new_member)
+        db.session.commit()
+
+        return jsonify(MembershipSchema().dump(new_member)), 201
+    except SchemaError as e:
+        return bad_request(e.errors[-1])
+
+
+@bp.route('/communities/<community_id>/members/<user_id>/roles', methods=['PUT'])
+@jwt_required()
+def community_update_member_role(community_id, user_id):
+    try:
+        community = Community.query.filter_by(id=community_id).first()
+
+        if not community:
+            return not_found("Commnunity's not found.")
+        
+        role_giver = Membership.query.filter_by(user_id=current_user.id).filter_by(community_id=community_id).first()
+
+        if not role_giver:
+            return not_found("Current user is not a member of this community.")
+
+        if role_giver.role.type == 'Member':
+            return forbidden('User cannot add member to community.')
+
+        data = request.get_json()
+
+        Schema({
+            'role': And(
+                Use(str),
+                error='Must be a valid role.'
+            )
+        }).validate(data)
+
+        user = User.query.filter_by(id=user_id).first()
+
+        if not user:
+            return not_found("Invalid user_id.")
+
+        role = Role.query.filter_by(type=data['role']).first()
+        if not role or role.type == 'Creator':
+            return not_found("Invalid role type.")
+
+        member = Membership.query.filter_by(user_id=user_id).filter_by(community_id=community_id).first()
+        member.role_id = role.id
+        member.role = role
+        
+        db.session.commit()
+
+        return jsonify(MembershipSchema().dump(member))
+    except SchemaError as e:
+        return bad_request(e.errors[-1])
+
+
+@bp.route('/communities/<community_id>/members/<user_id>', methods=['DELETE'])
+@jwt_required()
+def community_delete_member(community_id, user_id):
+    community = Community.query.filter_by(id=community_id).first()
+
+    if not community:
+        return not_found("Commnunity's not found.")
+    
+    role_giver = Membership.query.filter_by(user_id=current_user.id).filter_by(community_id=community_id).first()
+
+    if not role_giver:
+        return not_found("Current user is not a member of this community.")
+
+    if role_giver.role.type == 'Member':
+        return forbidden('User cannot add member to community.')
+
+    user = User.query.filter_by(id=user_id).first()
+
+    if not user:
+        return not_found("Invalid user_id.")
+
+    member = Membership.query.filter_by(user_id=user_id).filter_by(community_id=community_id).first()
+
+    json_returned = MembershipSchema().dump(member)
+
+    db.session.delete(member)
+    db.session.commit()
+
+    return jsonify(json_returned)

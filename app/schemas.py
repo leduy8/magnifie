@@ -97,9 +97,14 @@ class ReviewSchema(ma.SQLAlchemyAutoSchema):
         model = Review
 
 
-class MembershipSchema(ma.SQLAlchemyAutoSchema):
+class MembershipSchema(ma.SQLAlchemySchema):
     class Meta:
         model = Membership
+
+    id = ma.auto_field()
+    profile = ma.Nested(UserSchema())
+    role = ma.Nested(RoleSchema())
+    community = ma.Nested(CommunitySchema())
 
 
 class PublishSchema(ma.SQLAlchemyAutoSchema):
