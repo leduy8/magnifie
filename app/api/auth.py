@@ -79,7 +79,7 @@ def user_login():
         if not user:
             return not_found('User\'s not found.')
 
-        if user.check_password(data['email']):
+        if not user.check_password(data['password']):
             return bad_request('Wrong password.')
 
         access_token = create_access_token(identity=user.id)
