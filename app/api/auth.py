@@ -99,46 +99,75 @@ def user_profile():
 @bp.route('users/me', methods=['PUT'])
 @jwt_required()
 def user_update():
-    try:
-        data = request.get_json()
-        Schema({
-            'name': And(
-                Use(str),
-                lambda e: len(e) >= 2,
-                error='Name must be at least 2 characters.'
-            ),
-            'social_media': And(
-                Use(str),
-                lambda e: is_valid_url(e),
-                error='Social media must be a valid url link.'
-            ),
-            'bio': And(
-                Use(str),
-                lambda e: len(e) <= 250,
-                error='Bio must not be more than 250 characters.'
-            ),
-            'born': And(
-                Use(str),
-                lambda e: len(e) <= 100,
-                error='Bio must not be more than 100 characters.'
-            ),
-            'website': And(
-                Use(str),
-                lambda e: is_valid_url(e),
-                error='Website must be a valid url link.'
-            )
-        }).validate(data)
+    data = request.get_json()
 
-        current_user.name = data['name']
-        current_user.bio = data['bio']
-        current_user.born = data['born']
-        current_user.website = data['website']
-        current_user.social_media = data['social_media']
+    if 'name' in data:
+        try:
+            Schema({
+                'name': And(
+                    Use(str),
+                    lambda e: len(e) >= 2,
+                    error='Name must be at least 2 characters.'
+                ),
+            }).validate({'name': data['name']})
+            current_user.name = data['name']
+        except SchemaError as e:
+            return bad_request(e.errors[-1])
 
-        db.session.commit()
-        return jsonify(UserSchema().dump(current_user))
-    except SchemaError as e:
-        return bad_request(e.errors[-1])
+    if 'social_media' in data:
+        try:
+            Schema({
+                'social_media': And(
+                    Use(str),
+                    lambda e: is_valid_url(e),
+                    error='Social media must be a valid url link.'
+                ),
+            }).validate({ 'social_media': data['social_media']})
+            current_user.social_media = data['social_media']
+        except SchemaError as e:
+            return bad_request(e.errors[-1])
+
+    if 'bio' in data:
+        try:
+            Schema({
+                'bio': And(
+                    Use(str),
+                    lambda e: len(e) <= 250,
+                    error='Bio must not be more than 250 characters.'
+                ),
+            }).validate({'bio': data['bio']})
+            current_user.bio = data['bio']
+        except SchemaError as e:
+            return bad_request(e.errors[-1])
+
+    if 'born' in data:
+        try:
+            Schema({
+                'born': And(
+                    Use(str),
+                    lambda e: len(e) <= 100,
+                    error='Bio must not be more than 100 characters.'
+                ),
+            }).validate({'born': data['born']})
+            current_user.born = data['born']
+        except SchemaError as e:
+            return bad_request(e.errors[-1])
+
+    if 'website' in data:
+        try:
+            Schema({
+                'website': And(
+                    Use(str),
+                    lambda e: is_valid_url(e),
+                    error='Website must be a valid url link.'
+                )
+            }).validate({'website': data['website']})
+            current_user.website = data['website']
+        except SchemaError as e:
+            return bad_request(e.errors[-1])
+
+    db.session.commit()
+    return jsonify(UserSchema().dump(current_user))
 
 
 @bp.route('/users/<id>', methods=['GET'])
