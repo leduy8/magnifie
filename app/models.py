@@ -15,7 +15,7 @@ class User(db.Model):
     born = db.Column(db.String(100))
     website = db.Column(URLType)
     social_media = db.Column(URLType)
-    avatar = db.Column(db.LargeBinary)
+    avatar = db.Column(db.String(200))
     is_author = db.Column(db.Boolean, default=False)
     publishes = db.relationship(
         'Book',
@@ -46,7 +46,7 @@ class User(db.Model):
             'born': self.born,
             'website': self.website,
             'social_media': self.social_media,
-            'avatar': self.avatar.decode('ascii'),
+            'avatar': self.avatar,
             'is_author': self.is_author,
         }
 
@@ -78,7 +78,7 @@ class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(50))
     description = db.Column(db.String(250))
-    cover = db.Column(db.LargeBinary)
+    cover = db.Column(db.String(200))
     genres = db.relationship(
         'Genre',
         secondary='bookgenre',
@@ -92,7 +92,7 @@ class Book(db.Model):
             'id': self.id,
             'title': self.title,
             'description': self.description,
-            'cover': self.cover.decode('ascii')
+            'cover': self.cover
         }
     
     def get_book_reviews(self):

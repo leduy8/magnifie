@@ -1,3 +1,4 @@
+from pathlib import Path
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -27,6 +28,8 @@ def create_app(config_class=Config):
 
     from app.administrator import init_admin
     init_admin(app)
+
+    Path(f"{app.config['IMAGE_FOLDER_DIR']}").mkdir(parents=True, exist_ok=True)
 
     return app
 

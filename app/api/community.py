@@ -51,20 +51,25 @@ def community_creation():
             name=data['name'],
             description=data['description'],
             restrict_posting=data['restrict_posting'],
-            visibility = visibility,
-            category = category
+            visibility=visibility,
+            category=category
         )
 
-        
-
-        current_user.communities.append(community)
         db.session.add(community)
         db.session.commit()
 
         creator = Role.query.filter_by(type='Creator').first()
-        membership = Membership.query.filter_by(user_id=current_user.id).filter_by(community_id=community.id).first()
-        membership.role_id=creator.id
+        
+        membership = Membership(
+            user_id=current_user.id,
+            community_id=community.id,
+            role_id=creator.id
+        )
 
+        db.session.add(membership)
+        db.session.commit()
+
+        community.members.append(membership)
         db.session.commit()
 
         return jsonify(CommunitySchema().dump(community)), 201

@@ -1,4 +1,6 @@
 import base64
+from uuid import uuid4
+import os
 from werkzeug.utils import secure_filename
 from schema import Schema, SchemaError, And, Use
 from flask import request, jsonify, current_app
@@ -6,9 +8,9 @@ from flask_jwt_extended import current_user, jwt_required
 from app import db
 from app.api import bp
 from app.api.errors import bad_request, forbidden, not_found
-from app.models import Book, BookGenre, Genre, Review
+from app.models import Book, BookGenre, Genre, Publish, Review
 from app.schemas import BookSchema, ReviewSchema
-from app.utils import validate_date
+from app.utils import validate_date, is_allowed_file
 
 
 @bp.route('/books', methods=['POST'])
@@ -24,10 +26,15 @@ def book_creation():
     if not title or not description or not cover:
         return bad_request('Please input all fields.')
     
-    if secure_filename(cover.filename).rsplit('.', 1)[-1].lower() not in current_app.config['ALLOWED_EXTENSIONS']:
-        return bad_request('Image must be in jpg, jpeg or png')
+    if not cover or not is_allowed_file(cover.filename):
+        return bad_request('Image formats allow: jpg, jpeg, png.')
 
-    book = Book(title=title, description=description, cover=base64.b64encode(cover.stream.read()))
+    extension = cover.filename.rsplit('.', 1)[-1]
+    unique_name = uuid4().hex
+    filename = f'{unique_name}.{extension}'
+    cover.save(os.path.join(current_app.config['IMAGE_FOLDER_DIR'], filename))
+
+    book = Book(title=title, description=description, cover=f'/api/images/{filename}')
     current_user.publishes.append(book)
     db.session.add(book)
     db.session.commit()
@@ -54,19 +61,32 @@ def book_update(book_id):
     if not book:
         return not_found('Book\'s not found.')
 
-    title = request.form['title']
-    description = request.form['description']
-    cover = request.files['cover']
-
-    if not title or not description or not cover:
-        return bad_request('Please input all fields.')
+    title = request.form.get('title', False)
+    description = request.form.get('description', False)
+    cover = request.files.get('cover', False)
     
-    if secure_filename(cover.filename).rsplit('.', 1)[-1].lower() not in current_app.config['ALLOWED_EXTENSIONS']:
-        return bad_request('Image must be in jpg, jpeg or png')
+    if title:
+        book.title = title
 
-    book.title = title
-    book.description = description
-    book.cover = base64.b64encode(cover.stream.read())
+    if description:
+        book.description = description
+
+    if cover:
+        if not is_allowed_file(cover.filename):
+            return bad_request('Image formats allow: jpg, jpeg, png.')
+
+        # ? Delete old image in filesystem
+        filename = book.cover.rsplit('/', 1)[-1]
+        path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}\\{filename}"
+        if os.path.exists(path_to_file):
+            os.remove(path_to_file)
+
+        #? Create new image and link to Book
+        extension = cover.filename.rsplit('.', 1)[-1]
+        unique_name = uuid4().hex
+        filename = f'{unique_name}.{extension}'
+        cover.save(os.path.join(current_app.config['IMAGE_FOLDER_DIR'], filename))
+        book.cover = f'/api/images/{filename}'
 
     db.session.commit()
 
@@ -81,6 +101,19 @@ def book_deletion(book_id):
     if not book:
         return not_found('Book\'s not found.')
 
+    publish = Publish.query.filter_by(user_id=current_user.id).filter_by(book_id=book_id).first()
+
+    if not publish:
+        return forbidden("User cannot delete this book.")
+
+    filename = book.cover.rsplit('/', 1)[-1]
+    path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}\\{filename}"
+    if os.path.exists(path_to_file):
+        os.remove(path_to_file)
+
+    db.session.delete(publish)
+    db.session.commit()
+    
     db.session.delete(book)
     db.session.commit()
 

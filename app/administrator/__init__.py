@@ -28,7 +28,7 @@ def init_admin(app):
             return redirect(basic_auth.challenge())
 
     class UserModelView(ModelView):
-        column_list = ('id', 'email', 'name', 'member_since', 'born', 'website', 'social_media', 'is_author')
+        column_list = ('id', 'email', 'name', 'member_since', 'born', 'website', 'social_media', 'is_author', 'avatar')
         # column_exclude_list = ('password_hash', 'bio')
         form_excluded_columns = ('password_hash', 'member_since', 'reviews', 'posts', 'comments', 'publishes', 'avatar')
 
@@ -36,7 +36,7 @@ def init_admin(app):
             return super().on_model_change(form, model, is_created)
 
     class BookModelView(ModelView):
-        column_list = ('id', 'title', 'description')
+        column_list = ('id', 'title', 'description', 'cover')
         # column_exclude_list = ('cover')
         form_excluded_columns = ('reviewed_by', 'cover')
 

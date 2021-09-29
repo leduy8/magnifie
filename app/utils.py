@@ -1,6 +1,7 @@
 import email_validator
 import re
 from datetime import datetime
+from flask import current_app
 
 
 def validate_mail(email):
@@ -38,3 +39,7 @@ def validate_date(d):
         return True
     except ValueError:
         return False
+
+
+def is_allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[-1].lower() in current_app.config['ALLOWED_EXTENSIONS']
