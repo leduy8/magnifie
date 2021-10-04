@@ -28,7 +28,7 @@ def search_books():
     if not query:
         return bad_request('Search query must have value.')
 
-    books = Book.query.filter(User.title.ilike(f'%{query}%')).all()
+    books = Book.query.filter(Book.title.ilike(f'%{query}%')).all()
 
     return jsonify(BookSchema(many=True).dump(books))
 
