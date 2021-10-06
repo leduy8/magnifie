@@ -8,7 +8,7 @@ from flask_jwt_extended import current_user, jwt_required
 from app import db
 from app.api import bp
 from app.api.errors import bad_request, forbidden, not_found
-from app.models import Book, BookGenre, Genre, Publish, Review
+from app.models import Book, BookGenre, Genre, Publish, Review, User
 from app.schemas import BookSchema, ReviewSchema
 from app.utils import validate_date, is_allowed_file
 
@@ -50,7 +50,20 @@ def book_details(book_id):
     if not book:
         return not_found('Book\'s not found.')
 
-    return jsonify(book.get_book_info())
+    publish = Publish.query.filter_by(book_id=book_id).first()
+
+    if not publish:
+        return not_found('Something\'s wrong.')
+
+    user = User.query.filter_by(id=publish.user_id).first()
+
+    if not user:
+        return not_found('User\'s not found.')
+
+    return jsonify({
+        'author': user.get_user_info(),
+        'book': book.get_book_info()
+    })
 
 
 @bp.route('/books/<book_id>', methods=['PUT'])

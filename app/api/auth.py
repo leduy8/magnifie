@@ -233,3 +233,14 @@ def user_remove_genre(genre_id):
 @jwt_required()
 def get_user_books():
     return jsonify(current_user.get_user_books())
+
+
+@bp.route('/users/<id>/books', methods=['GET'])
+@jwt_required()
+def get_user_books_by_id(id):
+    user = User.query.filter_by(id=id).first()
+
+    if not user:
+        return not_found("User's not found.")
+
+    return jsonify(user.get_user_books())
