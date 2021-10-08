@@ -1,16 +1,23 @@
 import base64
 from uuid import uuid4
 import os
+import nltk
 from werkzeug.utils import secure_filename
 from schema import Schema, SchemaError, And, Use
 from flask import request, jsonify, current_app
 from flask_jwt_extended import current_user, jwt_required
+from sqlalchemy.sql.functions import func
+from threading import Thread
 from app import db
 from app.api import bp
 from app.api.errors import bad_request, forbidden, not_found
 from app.models import Book, BookGenre, Genre, Publish, Review, User
 from app.schemas import BookSchema, ReviewSchema
 from app.utils import validate_date, is_allowed_file
+from app.analytics.reviews import analyze, Scores
+
+
+nltk.download('vader_lexicon')
 
 
 @bp.route('/books', methods=['POST'])
@@ -40,6 +47,26 @@ def book_creation():
     db.session.commit()
 
     return jsonify(book.get_book_info()), 201
+
+
+@bp.route('/books/<int:book_id>/statistics', methods=['GET'])
+@jwt_required()
+def book_statistics(book_id):
+    avg_star = db.session.query(func.avg(Review.star)).filter(Review.book_id == book_id).first()[0]
+    avg_duration_to_finish = db.session.query(func.avg(Review.finished - Review.started)).filter(Review.book_id == book_id).first()[0]
+
+    scores = Scores()
+    overviews = db.session.query(Review.overview).filter(Review.book_id == book_id).all()    
+    t = Thread(target=analyze, args=(overviews, scores))
+    t.start()
+    t.join()
+    
+    return jsonify({
+        "avg_star": float(round(avg_star, 1)),
+        "avg_duration_to_finish": int(round(avg_duration_to_finish)),
+        "positive": scores.positive,
+        "negative": scores.negative
+    })
 
 
 @bp.route('/books/<book_id>', methods=['GET'])
@@ -90,8 +117,8 @@ def book_update(book_id):
 
         # ? Delete old image in filesystem
         filename = book.cover.rsplit('/', 1)[-1]
-        # path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}\\{filename}"
-        path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}/{filename}"
+        path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}\\{filename}"
+        # path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}/{filename}"
         if os.path.exists(path_to_file):
             os.remove(path_to_file)
 
@@ -121,8 +148,8 @@ def book_deletion(book_id):
         return forbidden("User cannot delete this book.")
 
     filename = book.cover.rsplit('/', 1)[-1]
-    # path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}\\{filename}"
-    path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}/{filename}"
+    path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}\\{filename}"
+    # path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}/{filename}"
     if os.path.exists(path_to_file):
         os.remove(path_to_file)
 
