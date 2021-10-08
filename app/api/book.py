@@ -49,7 +49,7 @@ def book_creation():
     return jsonify(book.get_book_info()), 201
 
 
-@bp.route('/books/<int:book_id>/statistics', methods=['GET'])
+@bp.route('/books/<book_id>/statistics', methods=['GET'])
 @jwt_required()
 def book_statistics(book_id):
     avg_star = db.session.query(func.avg(Review.star)).filter(Review.book_id == book_id).first()[0]
@@ -117,8 +117,8 @@ def book_update(book_id):
 
         # ? Delete old image in filesystem
         filename = book.cover.rsplit('/', 1)[-1]
-        path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}\\{filename}"
-        # path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}/{filename}"
+        # path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}\\{filename}"
+        path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}/{filename}"
         if os.path.exists(path_to_file):
             os.remove(path_to_file)
 
@@ -148,8 +148,8 @@ def book_deletion(book_id):
         return forbidden("User cannot delete this book.")
 
     filename = book.cover.rsplit('/', 1)[-1]
-    path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}\\{filename}"
-    # path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}/{filename}"
+    # path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}\\{filename}"
+    path_to_file = f"{current_app.config['IMAGE_FOLDER_DIR']}/{filename}"
     if os.path.exists(path_to_file):
         os.remove(path_to_file)
 
@@ -272,7 +272,7 @@ def book_add_review(book_id):
         book.reviews.append(review)
         db.session.commit()
 
-        return jsonify(book.get_book_reviews()), 201
+        return jsonify(ReviewSchema().dump(review)), 201
     except SchemaError as e:
         return bad_request(e.errors[-1])
 
