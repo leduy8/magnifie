@@ -247,7 +247,8 @@ class Review(db.Model):
             'content': self.content,
             'star': self.star,
             'started': self.started,
-            'finished': self.finished
+            'finished': self.finished,
+            'author': self.author.name
         }
 
     def __repr__(self) -> str:
