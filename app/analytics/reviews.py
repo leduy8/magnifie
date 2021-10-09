@@ -1,6 +1,6 @@
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from underthesea import sentiment
-from langdetect import detect
+# from underthesea import sentiment
+# from langdetect import detect
 
 
 class Scores:
@@ -12,15 +12,20 @@ class Scores:
 def analyze(overviews, scores):
     sia = SentimentIntensityAnalyzer()
     for overview in overviews:
-        if detect(overview[0]) == "vi":
-            result = sentiment(overview)
-            if result == "positive":
-                scores.positive += 1
-            elif result == "negative":
-                scores.negative += 1
-        else:
-            ps = sia.polarity_scores(overview[0])
-            if ps["pos"] > ps["neg"]:
-                scores.positive += 1
-            elif ps["pos"] < ps["neg"]:
-                scores.negative += 1
+        ps = sia.polarity_scores(overview[0])
+        if ps["pos"] > ps["neg"]:
+            scores.positive += 1
+        elif ps["pos"] < ps["neg"]:
+            scores.negative += 1
+        # if detect(overview[0]) == "vi":
+        #     result = sentiment(overview)
+        #     if result == "positive":
+        #         scores.positive += 1
+        #     elif result == "negative":
+        #         scores.negative += 1
+        # else:
+        #     ps = sia.polarity_scores(overview[0])
+        #     if ps["pos"] > ps["neg"]:
+        #         scores.positive += 1
+        #     elif ps["pos"] < ps["neg"]:
+        #         scores.negative += 1

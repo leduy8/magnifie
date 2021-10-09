@@ -17,17 +17,17 @@ class Config(object):
     # ? For sqlite
     # SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'app.db')
     # ? For postgreSQL
-    uri = os.getenv("DATABASE_URL")
-    if uri.startswith("postgres://"):
-        uri = uri.replace("postgres://", "postgresql://", 1)
-    SQLALCHEMY_DATABASE_URI = uri or 'sqlite:///' + os.path.join(basedir, 'app.db')
-    # SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://postgres:123456@localhost/Vivilio'
+    # uri = os.getenv("DATABASE_URL")
+    # if uri.startswith("postgres://"):
+    #     uri = uri.replace("postgres://", "postgresql://", 1)
+    # SQLALCHEMY_DATABASE_URI = uri or 'sqlite:///' + os.path.join(basedir, 'app.db')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://postgres:123456@localhost/Vivilio'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     MAX_CONTENT_LENGTH = 5 * 1024 * 1024
     ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png']
-    # IMAGE_FOLDER_DIR = os.environ.get('IMAGE_FOLDER_DIR') or f'{basedir}\\app\\static\\images'
-    IMAGE_FOLDER_DIR = os.environ.get('IMAGE_FOLDER_DIR') or f'{basedir}/app/static/images'
+    IMAGE_FOLDER_DIR = os.environ.get('IMAGE_FOLDER_DIR') or f'{basedir}\\app\\static\\images'
+    # IMAGE_FOLDER_DIR = os.environ.get('IMAGE_FOLDER_DIR') or f'{basedir}/app/static/images'
 
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY') or 'Maggie1234'
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=300)
