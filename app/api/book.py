@@ -52,6 +52,14 @@ def book_creation():
 @bp.route('/books/<book_id>/statistics', methods=['GET'])
 @jwt_required()
 def book_statistics(book_id):
+    if len(Review.query.filter_by(book_id=book_id).all()) == 0:
+        return jsonify({
+        "avg_star": 0,
+        "avg_duration_to_finish": 0,
+        "positive": 0,
+        "negative": 0
+    })
+
     avg_star = db.session.query(func.avg(Review.star)).filter(Review.book_id == book_id).first()[0]
     avg_duration_to_finish = db.session.query(func.avg(Review.finished - Review.started)).filter(Review.book_id == book_id).first()[0]
 
