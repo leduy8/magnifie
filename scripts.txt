@@ -1,4 +1,4 @@
-pip install python-dotenv Flask Flask-SQLAlchemy Flask-Migrate psycopg2 Flask-Mail autopep8 wheel Flask-JWT-Extended Flask-Admin Flask-BasicAuth SQLAlchemy-Utils Flask-Marshmallow schema marshmallow-sqlalchemy email-validator nltk langdetect (underthesea)
+pip install python-dotenv Flask Flask-SQLAlchemy Flask-Migrate psycopg2 Flask-Mail autopep8 wheel Flask-JWT-Extended Flask-Admin Flask-BasicAuth SQLAlchemy-Utils Flask-Marshmallow schema marshmallow-sqlalchemy email-validator nltk langdetect (underthesea) gunicorn
 
 # set the user mailing info before testing email feature
 set MAIL_SERVER=smtp.googlemail.com
