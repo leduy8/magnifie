@@ -212,7 +212,10 @@ class Post(db.Model):
             'id': self.id,
             'content': self.content,
             'turn_off_commenting': self.turn_off_commenting,
-            'author_id': self.author_id,
+            'author': {
+                "id": self.author.id,
+                "name": self.author.name
+            },
             'community_id': self.community_id
         }
 
@@ -324,7 +327,10 @@ class Comment(db.Model):
     def get_comment_info(self):
         return {
             'id': self.id,
-            'author_id': self.user_id,
+            'author': {
+                'id': self.author.id,
+                'name': self.author.name
+            },
             'post_id': self.post_id,
             'content': self.content
         }
